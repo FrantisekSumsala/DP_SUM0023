@@ -1,6 +1,10 @@
 ﻿@inherits LayoutComponentBase
 
-<PageTitle>DP_SUM0023</PageTitle>
+@using DP_SUM0023.Authentication
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+
+<PageTitle>ASPICE Assessment Tool</PageTitle>
 
 <div class="page">
     <div class="sidebar">
@@ -9,7 +13,11 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <button class="btn btn-primary btn-block" @onclick="Logout">Logout</button>
+                </Authorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
@@ -17,3 +25,13 @@
         </article>
     </main>
 </div>
+
+@code
+{
+    private async Task Logout()
+    {
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationStateAsync(null);
+        navManager.NavigateTo("/", true);
+    }
+}

@@ -1,0 +1,76 @@
+﻿@using DP_SUM0023.Authentication
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+
+@inject IUserAccountService userAccountService;
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navManager
+
+<h3 class="text-center">Login</h3>
+<div class="row justify-content-center align-items-center">
+    <div class="col-md-4 border border-dark rounded">
+        <EditForm Model=@loginInput OnSubmit="TryLogin" style="padding-top:10px">
+
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="UsernameInput">Username</label>
+                    <InputText id="UsernameInput" class="form-control" @bind-Value="@loginInput.Username"></InputText>
+                </div>
+
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="PasswordInput">Password</label>
+                    <InputText type="password" class="form-control" id="PasswordInput" @bind-Value="@loginInput.Password"></InputText>
+                </div>
+
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-sm">
+                        @if (!loginInput.IsValid)
+                        {
+                            <p style="color:red">Invalid Username or Password!</p>
+                        }
+                    </div>
+                        <div class="col-sm-4">
+                        <button type="submit" class="btn btn-primary btn-block mb-4 float-end">Login</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+@code {
+    class LoginInput
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public bool IsValid { get; set; } = true;
+    }
+
+    LoginInput loginInput = new LoginInput();
+
+    private async Task TryLogin(EditContext editContext)
+    {
+        var loginInput = (LoginInput)editContext.Model;
+        var username = loginInput.Username;
+        var password = loginInput.Password;
+
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+        {
+            loginInput.IsValid = false;
+            return;
+        }
+
+        var userAccount = await userAccountService.AuthenticateUser(username, password);
+        if (userAccount == null)
+        {
+            loginInput.IsValid = false;
+            return;
+        }
+
+        var userRole = userAccount.Role;
+        var userRoleName = userRole.Name;
+        var userSession = new UserSession(username, userRoleName);
+
+        var customAuthenticationStateProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+        await customAuthenticationStateProvider.UpdateAuthenticationStateAsync(userSession);
+        navManager.NavigateTo("/", true);
+    }
+}
