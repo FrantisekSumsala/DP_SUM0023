@@ -1,0 +1,50 @@
+﻿@page "/manageaccounts"
+@attribute [Authorize(Roles = "Admin")]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@inject IUserAccountService userAccountService
+
+<h1>Account Management</h1>
+
+@if (userAccounts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Edit</th>
+                <th>Remove</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var userAccount in userAccounts)
+            {
+                <tr>
+                    <td>@userAccountService.GetAccountUsername(userAccount).Result</td>
+                    <td>@userAccount.Role.Name</td>
+                    <td><button>Edit</button></td>
+                    <td><button>Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h1>Create new account</h1>
+
+
+
+@code {
+    private List<UserAccount> userAccounts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userAccounts = await userAccountService.GetAllUserAccounts();
+    }
+}

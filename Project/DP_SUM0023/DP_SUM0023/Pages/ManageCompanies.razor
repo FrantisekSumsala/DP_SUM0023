@@ -1,0 +1,109 @@
+﻿@page "/managecompanies"
+@attribute [Authorize(Roles = "Admin")]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+@inject ICompanyService companyService
+@inject NavigationManager navManager
+
+<h1>Companies Management</h1>
+
+<div class="container-fluid">
+    @*Display all companies*@
+    <div class="container-fluid">
+        @if (companies == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Company</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var company in companies)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@company.Name</td>
+                            <td><button type="button" class="btn btn-primary" @onclick="@(async () => await GoToManageCompany(company))">Manage</button></td>
+                            <td><button type="button" class="btn btn-danger" @onclick="@(async () => await RemoveCompany(company))">Remove</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @*Create new company*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Create new company</h3>
+
+        <div class="row justify-content-start align-items-center" style="padding-left:15px" >
+            <div class="col-md-3 border border-dark rounded">
+                <EditForm Model=@newCompany OnValidSubmit="CreateNewCompany">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-outline mb-4">
+                        <label class="form-label" for="CompanyNameInput">Company name</label>
+                        <InputText id="CompanyNameInput" class="form-control" @bind-Value="@newCompany.Name"></InputText>
+                        <ValidationMessage For="() => newCompany.Name" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Create</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllCompanies();
+    }
+
+    // Display all companies
+    private List<Company> companies = new List<Company>();
+
+    private async Task GetAllCompanies()
+    {
+        companies = await companyService.GetAllCompanies();
+    }
+
+    // Remove company
+    private async Task RemoveCompany(Company companyToRemove)
+    {
+        await companyService.RemoveCompany(companyToRemove);
+        await GetAllCompanies();
+    }
+
+    // Create new company
+    class NewCompanyInput
+    {
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Company name is required")]
+        public string? Name { get; set; }
+    }
+
+    NewCompanyInput newCompany = new NewCompanyInput();
+
+    private async Task CreateNewCompany(EditContext editContext)
+    {
+        var companyInput = (NewCompanyInput)editContext.Model;
+        Company newCompany = new Company { Name = companyInput.Name };
+
+        await companyService.CreateCompany(newCompany);
+        await GetAllCompanies();
+    }
+
+    private async Task GoToManageCompany(Company company)
+    {
+        navManager.NavigateTo("/companymanagement/" + company.Id.ToString(), true);
+    }
+
+}

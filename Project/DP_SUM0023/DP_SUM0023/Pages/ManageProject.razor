@@ -1,0 +1,113 @@
+﻿@page "/projectmanagement/{projectId:int}"
+@attribute [Authorize]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+@inject IProjectService projectService
+@inject IProcessService processService
+@inject NavigationManager navManager
+
+<h1>Manage Project (@Project.Company.Name - @Project.Name)</h1>
+
+<div class="container-fluid">
+    @*Display all processes*@
+    <div class="container-fluid">
+        @if (processes == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Project's processes</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var process in processes)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@process.Name</td>
+                            <td><button type="button" class="btn btn-primary">Manage</button></td>
+                            <td><button type="button" class="btn btn-danger" @onclick="@(async () => await RemoveProcess(process))">Remove</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @*Create new process*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Create new process for project</h3>
+
+        <div class="row justify-content-start align-items-center" style="padding-left:15px">
+            <div class="col-md-3 border border-dark rounded">
+                <EditForm Model=@newProcess OnValidSubmit="CreateNewProcess">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-outline mb-4">
+                        <label class="form-label" for="ProjectNameInput">Project name</label>
+                        <InputText id="ProjectNameInput" class="form-control" @bind-Value="@newProcess.Name"></InputText>
+                        <ValidationMessage For="() => newProcess.Name" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Create</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Project = await projectService.GetProjectById(ProjectId);
+        if (Project == null)
+            navManager.NavigateTo("/", true);
+
+        GetAllProcesses();
+    }
+
+    [Parameter]
+    public int ProjectId { get; set; }
+    public Project? Project { get; set; }
+
+    // Display all processes
+    private List<Process> processes = new List<Process>();
+
+    private void GetAllProcesses()
+    {
+        processes = Project.Processes;
+    }
+
+    // Remove company
+    private async Task RemoveProcess(Process processToRemove)
+    {
+        await processService.RemoveProcess(processToRemove);
+        GetAllProcesses();
+    }
+
+    // Create new process
+    class NewProcessInput
+    {
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Process name is required")]
+        public string? Name { get; set; }
+    }
+
+    NewProcessInput newProcess = new NewProcessInput();
+
+    private async Task CreateNewProcess(EditContext editContext)
+    {
+        var newProcessInput = (NewProcessInput)editContext.Model;
+        Process newProcess = new Process { Name = newProcessInput.Name, Project = this.Project };
+
+        await processService.CreateProcess(newProcess);
+        GetAllProcesses();
+    }
+
+}

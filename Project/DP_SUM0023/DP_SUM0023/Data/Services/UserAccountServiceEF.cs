@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace DP_SUM0023.Data.Services
 {
-    public class UserAccountService : IUserAccountService
+    public class UserAccountServiceEF : IUserAccountService
     {
         private readonly CustomDbContext dbContext;
 
-        public UserAccountService(CustomDbContext dbContext)
+        public UserAccountServiceEF(CustomDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -33,6 +33,20 @@ namespace DP_SUM0023.Data.Services
                 return null;
 
             return accountLogin.Account;
+        }
+
+        public async Task<List<UserAccount>> GetAllUserAccounts()
+        {
+            return await dbContext.Account.ToListAsync();
+        }
+
+        public async Task<string> GetAccountUsername(UserAccount account)
+        {
+            var accountLogin = await dbContext.AccountLogin.SingleOrDefaultAsync(login => login.Account == account);
+            if (accountLogin == null)
+                return "Not found";
+            
+            return accountLogin.Username;
         }
     }
 }

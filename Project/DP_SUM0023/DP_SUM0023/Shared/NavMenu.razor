@@ -10,11 +10,20 @@
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <!--TODO: Apply actual role based navigation using the role based display below-->
-        <AuthorizeView Roles="Admin,User">
+        <AuthorizeView Roles="Admin">
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="counter">
-                        <span class="oi oi-plus" aria-hidden="true"></span> Counter
+                    <NavLink class="nav-link" href="manageaccounts">
+                        <span class="oi oi-plus" aria-hidden="true"></span> Manage Accounts
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="managecompanies">
+                        <span class="oi oi-plus" aria-hidden="true"></span> Manage Companies
                     </NavLink>
                 </div>
             </Authorized>

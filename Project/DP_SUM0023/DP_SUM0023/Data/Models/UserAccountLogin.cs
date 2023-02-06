@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DP_SUM0023.Data.Models
 {
+    [Table("useraccountlogin")]
     public class UserAccountLogin
     {
         [Key, Required, DatabaseGenerated(DatabaseGeneratedOption.None)]

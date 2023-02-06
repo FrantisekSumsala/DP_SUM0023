@@ -3,15 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DP_SUM0023.Data.Models
 {
-    [Table("useraccount")]
-    public class UserAccount
+    [Table("company")]
+    public class Company
     {
         [Key, Required]
         public int Id { get; set; }
 
         [Required]
-        public virtual UserAccountRole Role { get; set; }
+        public string Name { get; set; }
 
-        public virtual List<Process> AssignedProcesses { get; set; } = new List<Process>();
+        public virtual List<Project> Projects { get; set; } = new List<Project>();
     }
 }

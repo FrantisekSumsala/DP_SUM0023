@@ -3,13 +3,18 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DP_SUM0023.Data.Models
 {
-    [Table("useraccountrole")]
-    public class UserAccountRole
+    [Table("process")]
+    public class Process
     {
         [Key, Required]
         public int Id { get; set; }
 
         [Required]
         public string Name { get; set; }
+
+        [Required]
+        public virtual Project Project { get; set; }
+
+        public virtual List<ProcessEvaluation> Evaluations { get; set; } = new List<ProcessEvaluation>();
     }
 }

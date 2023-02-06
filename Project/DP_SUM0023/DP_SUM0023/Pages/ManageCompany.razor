@@ -1,0 +1,121 @@
+﻿@page "/companymanagement/{companyId:int}"
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Company Management</PageTitle>
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+@inject ICompanyService companyService
+@inject IProjectService projectService
+@inject NavigationManager navManager
+
+<h1>Manage Company (@Company.Name)</h1>
+
+<div class="container-fluid">
+    @*Display all companies*@
+    <div class="container-fluid">
+        @if (projects == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Company's projects</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in projects)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@project.Name</td>
+                            <td><button type="button" class="btn btn-primary" @onclick="@(async () => await GoToManageProject(project))">Manage</button></td>
+                            <td><button type="button" class="btn btn-danger" @onclick="@(async () => await RemoveProject(project))">Remove</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @*Create new company*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Create new project for company</h3>
+
+        <div class="row justify-content-start align-items-center" style="padding-left:15px">
+            <div class="col-md-3 border border-dark rounded">
+                <EditForm Model=@newProject OnValidSubmit="CreateNewProject">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-outline mb-4">
+                        <label class="form-label" for="ProjectNameInput">Project name</label>
+                        <InputText id="ProjectNameInput" class="form-control" @bind-Value="@newProject.Name"></InputText>
+                        <ValidationMessage For="() => newProject.Name" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Create</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Company = await companyService.GetCompanyById(CompanyId);
+        if (Company == null)
+            navManager.NavigateTo("/managecompanies", true);
+
+        GetAllProjects();
+    }
+
+    // Display company info
+    [Parameter]
+    public int CompanyId { get; set; }
+    public Company? Company { get; set; }
+
+    // Display all companies
+    private List<Project> projects = new List<Project>();
+
+    private void GetAllProjects()
+    {
+        projects = Company.Projects;
+    }
+
+    // Remove company
+    private async Task RemoveProject(Project projectToRemove)
+    {
+        await projectService.RemoveProject(projectToRemove);
+        GetAllProjects();
+    }
+
+    // Create new company
+    class NewProjectInput
+    {
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Project name is required")]
+        public string? Name { get; set; }
+    }
+
+    NewProjectInput newProject = new NewProjectInput();
+
+    private async Task CreateNewProject(EditContext editContext)
+    {
+        var loginInput = (NewProjectInput)editContext.Model;
+        Project newProject = new Project { Name = loginInput.Name, Company = this.Company };
+
+        await projectService.CreateProject(newProject);
+        GetAllProjects();
+    }
+
+    private async Task GoToManageProject(Project project)
+    {
+        navManager.NavigateTo("/projectmanagement/" + project.Id.ToString(), true);
+    }
+
+}
