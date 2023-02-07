@@ -8,9 +8,54 @@
 @inject IProcessService processService
 @inject NavigationManager navManager
 
-<h1>Manage Project (@Project.Company.Name - @Project.Name)</h1>
+<h1>Project: @Project.Company.Name - @Project.Name</h1>
 
 <div class="container-fluid">
+    @*Display project information*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Project information</h3>
+
+        <div class="row justify-content-start align-items-center" style="padding-left:15px">
+            @if (!isInProjectEditMode)
+            {
+                <div class="col-md-3 border border-dark rounded" style="padding-top:10px">
+                    <div class="row">
+                        <div class="col">Project name:</div>
+                        <div class="col">@Project.Name</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mb-3 float-end" @onclick=EnableProjectInformationEditMode>Edit</button>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-3 border border-dark rounded">
+                    <EditForm Model=@projectInformation OnValidSubmit="ChangeProjectInformation">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="ProjectNameInput">Company name</label>
+                            <InputText id="ProjectNameInput" class="form-control" @bind-Value="@projectInformation.Name"></InputText>
+                            <ValidationMessage For="() => projectInformation.Name" />
+                        </div>
+
+                        <div class="row justify-content-end">
+                            <div class="col-auto" style="display:block">
+                                <button type="button" class="btn btn-danger btn-block mb-3 float-end" @onclick=CancelChangeProjectInformation>Cancel</button>
+
+                            </div>
+                            <div class="col-auto" style="display:block">
+                                <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Save</button>
+
+                            </div>
+                        </div>
+
+                    </EditForm>
+                </div>
+            }
+        </div>
+    </div>
+
     @*Display all processes*@
     <div class="container-fluid">
         @if (processes == null)
@@ -64,18 +109,48 @@
 </div>
 
 @code {
+    [Parameter]
+    public int ProjectId { get; set; }
+    public Project? Project { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        Project = await projectService.GetProjectById(ProjectId);
+        Project = await projectService.GetByIdAsync(ProjectId);
         if (Project == null)
             navManager.NavigateTo("/", true);
 
         GetAllProcesses();
     }
 
-    [Parameter]
-    public int ProjectId { get; set; }
-    public Project? Project { get; set; }
+    // Display project info
+    bool isInProjectEditMode = false;
+    class ProjectInformation
+    {
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Project name is required")]
+        public string Name { get; set; }
+    }
+
+    ProjectInformation projectInformation = new ProjectInformation();
+
+    private async Task EnableProjectInformationEditMode()
+    {
+        isInProjectEditMode = true;
+        projectInformation.Name = Project.Name;
+    }
+
+    private async Task ChangeProjectInformation(EditContext editContext)
+    {
+        var projectInformationInput = (ProjectInformation)editContext.Model;
+        Project.Name = projectInformation.Name;
+
+        await projectService.UpdateAsync(Project);
+        isInProjectEditMode = false;
+    }
+
+    private async Task CancelChangeProjectInformation()
+    {
+        isInProjectEditMode = false;
+    }
 
     // Display all processes
     private List<Process> processes = new List<Process>();
@@ -88,7 +163,7 @@
     // Remove company
     private async Task RemoveProcess(Process processToRemove)
     {
-        await processService.RemoveProcess(processToRemove);
+        await processService.RemoveAsync(processToRemove);
         GetAllProcesses();
     }
 
@@ -106,7 +181,7 @@
         var newProcessInput = (NewProcessInput)editContext.Model;
         Process newProcess = new Process { Name = newProcessInput.Name, Project = this.Project };
 
-        await processService.CreateProcess(newProcess);
+        await processService.CreateAsync(newProcess);
         GetAllProcesses();
     }
 

@@ -73,13 +73,13 @@
 
     private async Task GetAllCompanies()
     {
-        companies = await companyService.GetAllCompanies();
+        companies = await companyService.GetAllAsync();
     }
 
     // Remove company
     private async Task RemoveCompany(Company companyToRemove)
     {
-        await companyService.RemoveCompany(companyToRemove);
+        await companyService.RemoveAsync(companyToRemove);
         await GetAllCompanies();
     }
 
@@ -97,7 +97,7 @@
         var companyInput = (NewCompanyInput)editContext.Model;
         Company newCompany = new Company { Name = companyInput.Name };
 
-        await companyService.CreateCompany(newCompany);
+        await companyService.CreateAsync(newCompany);
         await GetAllCompanies();
     }
 

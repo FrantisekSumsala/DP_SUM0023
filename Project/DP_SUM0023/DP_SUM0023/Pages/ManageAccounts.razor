@@ -45,6 +45,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        userAccounts = await userAccountService.GetAllUserAccounts();
+        userAccounts = await userAccountService.GetAllAsync();
     }
 }
