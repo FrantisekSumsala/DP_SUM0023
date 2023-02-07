@@ -1,4 +1,5 @@
 ﻿using DP_SUM0023.Data.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DP_SUM0023.Data.Services
 {
@@ -10,16 +11,33 @@ namespace DP_SUM0023.Data.Services
             this.dbContext = dbContext;
         }
 
-        public async Task CreateProcess(Process newProcess)
+        public async Task<List<Process>> GetAllAsync()
         {
-            await dbContext.Process.AddAsync(newProcess);
+            return await dbContext.Process.ToListAsync();
+        }
+
+        public async Task<Process> GetByIdAsync(int id)
+        {
+            return await dbContext.Process.SingleOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task CreateAsync(Process instanceToCreate)
+        {
+            await dbContext.Process.AddAsync(instanceToCreate);
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task RemoveProcess(Process processToRemove)
+        public async Task UpdateAsync(Process instanceToUpdate)
         {
-            dbContext.Process.Remove(processToRemove);
+            dbContext.Process.Update(instanceToUpdate);
             await dbContext.SaveChangesAsync();
         }
+
+        public async Task RemoveAsync(Process instanceToRemove)
+        {
+            dbContext.Process.Remove(instanceToRemove);
+            await dbContext.SaveChangesAsync();
+        }
+
     }
 }

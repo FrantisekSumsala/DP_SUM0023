@@ -2,9 +2,8 @@
 
 namespace DP_SUM0023.Data.Services
 {
-    public interface IProcessService
+    public interface IProcessService : IDefaultCRUDService<Process>
     {
-        public Task CreateProcess(Process newProcess);
-        public Task RemoveProcess(Process processToRemove);
+
     }
 }

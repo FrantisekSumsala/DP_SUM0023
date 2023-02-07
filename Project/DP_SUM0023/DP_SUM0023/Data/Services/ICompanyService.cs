@@ -2,12 +2,8 @@
 
 namespace DP_SUM0023.Data.Services
 {
-    public interface ICompanyService
+    public interface ICompanyService : IDefaultCRUDService<Company>
     {
-        public Task<List<Company>> GetAllCompanies();
-        public Task<Company> GetCompanyById(int id);
-        public Task CreateCompany(Company newCompany);
-        public Task RemoveCompany(Company companyToRemove);
 
     }
 }

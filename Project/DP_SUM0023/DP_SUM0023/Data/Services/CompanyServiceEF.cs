@@ -11,26 +11,33 @@ namespace DP_SUM0023.Data.Services
             this.dbContext = dbContext;
         }
 
-        public async Task<List<Company>> GetAllCompanies()
+        public async Task<List<Company>> GetAllAsync()
         {
             return await dbContext.Company.ToListAsync();
         }
 
-        public async Task CreateCompany(Company newCompany)
-        {
-            await dbContext.Company.AddAsync(newCompany);
-            await dbContext.SaveChangesAsync();
-        }
-
-        public async Task RemoveCompany(Company companyToRemove)
-        {
-            dbContext.Company.Remove(companyToRemove);
-            await dbContext.SaveChangesAsync();
-        }
-
-        public async Task<Company> GetCompanyById(int id)
+        public async Task<Company> GetByIdAsync(int id)
         {
             return await dbContext.Company.SingleOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task CreateAsync(Company instanceToCreate)
+        {
+            await dbContext.Company.AddAsync(instanceToCreate);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Company instanceToUpdate)
+        {
+            dbContext.Company.Update(instanceToUpdate);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task RemoveAsync(Company instanceToRemove)
+        {
+            dbContext.Company.Remove(instanceToRemove);
+            await dbContext.SaveChangesAsync();
+        }
+
     }
 }

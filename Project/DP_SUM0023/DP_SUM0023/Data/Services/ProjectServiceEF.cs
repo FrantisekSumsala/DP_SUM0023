@@ -11,21 +11,33 @@ namespace DP_SUM0023.Data.Services
             this.dbContext = dbContext;
         }
 
-        public async Task RemoveProject(Project projectToRemove)
+        public async Task<List<Project>> GetAllAsync()
         {
-            dbContext.Project.Remove(projectToRemove);
+            return await dbContext.Project.ToListAsync();
+        }
+
+        public async Task<Project> GetByIdAsync(int id)
+        {
+            return await dbContext.Project.SingleOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task CreateAsync(Project instanceToCreate)
+        {
+            await dbContext.Project.AddAsync(instanceToCreate);
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task CreateProject(Project newProject)
+        public async Task UpdateAsync(Project instanceToUpdate)
         {
-            await dbContext.Project.AddAsync(newProject);
+            dbContext.Project.Update(instanceToUpdate);
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<Project> GetProjectById(int projectId)
+        public async Task RemoveAsync(Project instanceToRemove)
         {
-            return await dbContext.Project.SingleOrDefaultAsync(x => x.Id == projectId);
+            dbContext.Project.Remove(instanceToRemove);
+            await dbContext.SaveChangesAsync();
         }
+
     }
 }
