@@ -1,0 +1,196 @@
+﻿@page "/processmanagement/{processId:int}"
+@attribute [Authorize]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+@inject IProcessService processService
+@inject IProcessEvaluationService processEvaluationService
+@inject NavigationManager navManager
+
+<h1>Process: @Process.Project.Company.Name - @Process.Project.Name - @Process.Name</h1>
+
+<div class="container-fluid">
+    @*Display process information*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Process information</h3>
+
+        <div class="row justify-content-start align-items-center" style="padding-left:15px">
+            @if (!isInProcessEditMode)
+            {
+                <div class="col-md-3 border border-dark rounded" style="padding-top:10px">
+                    <div class="row">
+                        <div class="col">Process name:</div>
+                        <div class="col">@Process.Name</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mb-3 float-end" @onclick=EnableProcessInformationEditMode>Edit</button>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-3 border border-dark rounded">
+                    <EditForm Model=@processInformation OnValidSubmit="ChangeProcessInformation">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="ProcessNameInput">Process name</label>
+                            <InputText id="ProcessNameInput" class="form-control" @bind-Value="@processInformation.Name"></InputText>
+                            <ValidationMessage For="() => processInformation.Name" />
+                        </div>
+
+                        <div class="row justify-content-end">
+                            <div class="col-auto" style="display:block">
+                                <button type="button" class="btn btn-danger btn-block mb-3 float-end" @onclick=CancelChangeProcessInformation>Cancel</button>
+
+                            </div>
+                            <div class="col-auto" style="display:block">
+                                <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Save</button>
+
+                            </div>
+                        </div>
+
+                    </EditForm>
+                </div>
+            }
+        </div>
+    </div>
+
+    @*Display all process evaluations*@
+    <div class="container-fluid">
+        @if (evaluations == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Process evaluations</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var evaluation in evaluations)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@evaluation.DatePerformed</td>
+                            <td><button type="button" class="btn btn-danger" @onclick="@(async () => await RemoveEvaluation(evaluation))">Delete</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @*Display all process reports*@
+    <div class="container-fluid">
+        @if (reports == null)
+        {
+            @*<p><em>Loading...</em></p>*@
+            <p>TODO</p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Process reports</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in reports)
+                    {
+                        <tr>
+@*                            <td scope="row" class="align-middle">@report.DatePerformed</td>
+                            <td><button type="button" class="btn btn-danger" @onclick="@(async () => await RemoveEvaluation(report))">Delete</button></td>*@
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ProcessId { get; set; }
+    public Process? Process { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Process = await processService.GetByIdAsync(ProcessId);
+        if (Process == null)
+            navManager.NavigateTo("/", true);
+
+        GetAllProcessEvaluations();
+    }
+
+    // Display project info
+    bool isInProcessEditMode = false;
+    class ProcessInformation
+    {
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Process name is required")]
+        public string Name { get; set; }
+    }
+
+    ProcessInformation processInformation = new ProcessInformation();
+
+    private async Task EnableProcessInformationEditMode()
+    {
+        isInProcessEditMode = true;
+        processInformation.Name = Process.Name;
+    }
+
+    private async Task ChangeProcessInformation(EditContext editContext)
+    {
+        var processInformationInput = (ProcessInformation)editContext.Model;
+        Process.Name = processInformation.Name;
+
+        await processService.UpdateAsync(Process);
+        isInProcessEditMode = false;
+    }
+
+    private async Task CancelChangeProcessInformation()
+    {
+        isInProcessEditMode = false;
+    }
+
+    // Display all process evaluations
+    private List<ProcessEvaluation> evaluations = new List<ProcessEvaluation>();
+
+    private void GetAllProcessEvaluations()
+    {
+        evaluations = Process.Evaluations;
+    }
+
+    // Remove evaluation
+    private async Task RemoveEvaluation(ProcessEvaluation evaluationToRemove)
+    {
+        await processEvaluationService.RemoveAsync(evaluationToRemove);
+        GetAllProcessEvaluations();
+    }
+
+    //TODO
+    // Display all process reports
+    private List<ProcessReport> reports = new List<ProcessReport>();
+
+    private void GetAllProcessReports()
+    {
+        throw new NotImplementedException();
+        //reports = Process.Reports;
+    }
+
+    // Remove evaluation
+    private async Task RemoveReport(ProcessReport reportToRemove)
+    {
+        throw new NotImplementedException();
+        //await processEvaluationService.RemoveAsync(reportToRemove);
+        //GetAllProcessEvaluations();
+    }
+
+}
