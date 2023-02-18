@@ -4,47 +4,67 @@
 @using DP_SUM0023.Data.Models
 @using DP_SUM0023.Data.Services
 @inject IUserAccountService userAccountService
+@inject NavigationManager navManager
 
 <h1>Account Management</h1>
 
-@if (userAccounts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Edit</th>
-                <th>Remove</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var userAccount in userAccounts)
-            {
-                <tr>
-                    <td>@userAccountService.GetAccountUsername(userAccount).Result</td>
-                    <td>@userAccount.Role.Name</td>
-                    <td><button>Edit</button></td>
-                    <td><button>Remove</button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-<h1>Create new account</h1>
-
-
+<div class="container-fluid">
+    @*Display all users*@
+    <div class="container-fluid">
+        @if (userAccounts == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col">Username</th>
+                        <th style="width:100%">Role</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var userAccount in userAccounts)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@userAccountService.GetAccountUsername(userAccount).Result</td>
+                            <td class="align-middle">@userAccount.Role.Name</td>
+                            <td><button type="button" class="btn btn-primary" @onclick="@(async () => await GoToManageUserAccount(userAccount))">Edit</button></td>
+                            <td><button type="button" class="btn btn-danger" @onclick="@(async () => await RemoveUserAccount(userAccount))">Remove</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
 
 @code {
-    private List<UserAccount> userAccounts;
-
     protected override async Task OnInitializedAsync()
+    {
+        GetAllAccounts();
+    }
+
+    private List<UserAccount> userAccounts = new List<UserAccount>();
+
+    private async Task GetAllAccounts()
     {
         userAccounts = await userAccountService.GetAllAsync();
     }
+
+    // Remove account
+    private async Task RemoveUserAccount(UserAccount accountToRemove)
+    {
+        await userAccountService.RemoveAsync(accountToRemove);
+        await GetAllAccounts();
+    }
+
+    private async Task GoToManageUserAccount(UserAccount userAccount)
+    {
+        navManager.NavigateTo("/manageaccounts/" + userAccount.Id.ToString(), true);
+    }
+
 }

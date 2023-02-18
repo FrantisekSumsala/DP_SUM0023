@@ -31,9 +31,11 @@ builder.Services.AddDbContext<CustomDbContext>((DbContextOptionsBuilder options)
 // setup custom services
 builder.Services.AddSingleton<WeatherForecastService>(); //TODO: Get rid of this and the related classes
 builder.Services.AddScoped<IUserAccountService, UserAccountServiceEF>();
+builder.Services.AddScoped<IUserAccountRoleService, UserAccountRoleServiceEF>();
 builder.Services.AddScoped<ICompanyService, CompanyServiceEF>();
 builder.Services.AddScoped<IProjectService, ProjectServiceEF>();
 builder.Services.AddScoped<IProcessService, ProcessServiceEF>();
+builder.Services.AddScoped<IProcessEvaluationService, ProcessEvauluationServiceEF>();
 
 var app = builder.Build();
 

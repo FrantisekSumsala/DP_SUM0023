@@ -12,6 +12,6 @@ namespace DP_SUM0023.Data.Models
         [Required]
         public virtual UserAccountRole Role { get; set; }
 
-        public virtual List<Process> AssignedProcesses { get; set; } = new List<Process>();
+        public virtual List<Project> AssignedProjects { get; set; } = new List<Project>();
     }
 }

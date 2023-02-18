@@ -1,0 +1,213 @@
+﻿@page "/manageaccounts/{accountId:int}"
+@attribute [Authorize(Roles = "Admin")]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+@inject IUserAccountService userAccountService
+@inject IUserAccountRoleService userAccountRoleService
+@inject IProjectService projectService
+@inject NavigationManager navManager
+
+<h1>Account: @userAccountService.GetAccountUsername(Account)</h1>
+
+<div class="container-fluid">
+    @*Display account information*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Account information</h3>
+
+        <div class="row justify-content-start align-items-center" style="padding-left:15px">
+            @if (!isInAccountEditMode)
+            {
+                <div class="col-md-3 border border-dark rounded" style="padding-top:10px">
+                    <div class="row">
+                        <div class="col">Username</div>
+                        <div class="col">@Account.Role.Name</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block mb-3 float-end" @onclick=EnableAccountInformationEditMode>Edit</button>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-3 border border-dark rounded">
+                    <EditForm Model=@accountInformation OnValidSubmit="ChangeAccountInformation">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-outline mb-4">
+                            <label class="form-label" for="AccountRoleInput">Account role</label>
+                            <InputSelect id="AccountRoleInput" class="form-control" @bind-Value="@accountInformation.Role">
+                                @foreach (var role in Enum.GetValues(typeof(EAccountRole)))
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </InputSelect>
+
+                            <ValidationMessage For="() => accountInformation.Role" />
+                        </div>
+
+                        <div class="row justify-content-end">
+                            <div class="col-auto" style="display:block">
+                                <button type="button" class="btn btn-danger btn-block mb-3 float-end" @onclick=CancelChangeAccountInformation >Cancel</button>
+
+                            </div>
+                            <div class="col-auto" style="display:block">
+                                <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Save</button>
+
+                            </div>
+                        </div>
+
+                    </EditForm>
+                </div>
+            }
+        </div>
+    </div>
+
+    @*Display projects account is assigned to*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Assigned projects:</h3>
+
+        @if (assignedProjects == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Project name</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in assignedProjects)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@project.Name</td>
+                            <td><button type="button" class="btn btn-danger text-nowrap" @onclick="@(async () => await RemoveFromProject(project))">Remove from project</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @*Display projects account is not assigned to*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Projects not assigned to:</h3>
+
+        @if (unassignedProjects == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Project name</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in unassignedProjects)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@project.Name</td>
+                            <td><button type="button" class="btn btn-primary text-nowrap" @onclick="@(async () => await AssignToProject(project))">Assign to project</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+
+</div>
+
+@code {
+    [Parameter]
+    public int AccountId { get; set; }
+    public UserAccount? Account { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Account = await userAccountService.GetByIdAsync(AccountId);
+        if (Account == null)
+            navManager.NavigateTo("/manageaccounts", true);
+
+        GetAssignedProjects();
+        GetUnassignedProjects();
+    }
+
+    // Display account info
+    bool isInAccountEditMode = false;
+    class AccountInformation
+    {
+        [Required(ErrorMessage = "Rele is required")]
+        public EAccountRole Role { get; set; }
+    }
+
+    AccountInformation accountInformation = new AccountInformation();
+
+    private async Task EnableAccountInformationEditMode()
+    {
+        isInAccountEditMode = true;
+        accountInformation.Role = userAccountRoleService.ToEnumRole(Account.Role);
+    }
+
+    private async Task ChangeAccountInformation(EditContext editContext)
+    {
+        var accountInformationInput = (AccountInformation)editContext.Model;
+        Account.Role = await userAccountRoleService.GetByEnum(accountInformation.Role);
+
+        await userAccountService.UpdateAsync(Account);
+        isInAccountEditMode = false;
+    }
+
+    private async Task CancelChangeAccountInformation()
+    {
+        isInAccountEditMode = false;
+    }
+
+    // Display assigned projects
+    private List<Project> assignedProjects = new List<Project>();
+    private async Task GetAssignedProjects()
+    {
+        assignedProjects = Account.AssignedProjects;
+    }
+
+    private async Task RemoveFromProject(Project project)
+    {
+        var accountProjects = Account.AssignedProjects;
+        if (!accountProjects.Contains(project))
+            return;
+
+        accountProjects.Remove(project);
+        userAccountService.UpdateAsync(Account);
+
+        GetAssignedProjects();
+        GetUnassignedProjects();
+    }
+
+    // Display unassigned projects
+    private List<Project> unassignedProjects = new List<Project>();
+    private async Task GetUnassignedProjects()
+    {
+        unassignedProjects = await projectService.GetProjectsNotAssignedToAccount(Account);
+    }
+
+    private async Task AssignToProject(Project project)
+    {
+        var accountProjects = Account.AssignedProjects;
+        if (accountProjects.Contains(project))
+            return;
+
+        accountProjects.Add(project);
+        userAccountService.UpdateAsync(Account);
+
+        GetAssignedProjects();
+        GetUnassignedProjects();
+    }
+}

@@ -39,5 +39,11 @@ namespace DP_SUM0023.Data.Services
             await dbContext.SaveChangesAsync();
         }
 
+        public async Task<List<Project>> GetProjectsNotAssignedToAccount(UserAccount account)
+        {
+            var assignedProjects = account.AssignedProjects;
+            var allProjects = await GetAllAsync();
+            return allProjects.Where(p => !assignedProjects.Contains(p)).ToList();
+        }
     }
 }
