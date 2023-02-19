@@ -1,0 +1,112 @@
+﻿@page "/register"
+
+@using DP_SUM0023.Authentication
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Cryptography
+@using Microsoft.AspNetCore.Cryptography.KeyDerivation
+
+@inject IUserAccountService userAccountService;
+@inject IUserAccountRoleService userAccountRoleService;
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navManager
+
+<h3 class="text-center">Register</h3>
+<div class="row justify-content-center align-items-center">
+    <div class="col-md-4 border border-dark rounded">
+        @if (registerInput.Registered)
+        {
+            <h5 class="text-center">Successfully registered!</h5>
+
+            <div class="d-grid" style="padding-bottom:10px">
+                <button class="btn-primary" @onclick=GoToLogin>Login</button>
+            </div>
+        }
+        else
+        {
+            <EditForm Model=@registerInput OnValidSubmit="TryRegister" style="padding-top:10px">
+                <DataAnnotationsValidator />
+
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="UsernameInput">Username</label>
+                    <InputText id="UsernameInput" class="form-control" @bind-Value="@registerInput.Username"></InputText>
+                </div>
+                <ValidationMessage For="() => registerInput.Username" />
+
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="PasswordInput">Password</label>
+                    <InputText type="password" class="form-control" id="PasswordInput" @bind-Value="@registerInput.Password"></InputText>
+                </div>
+                <ValidationMessage For="() => registerInput.Password" />
+
+
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-sm">
+                        @if (!registerInput.IsValid)
+                        {
+                            <p style="color:red">Username is already taken!</p>
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-primary btn-block mb-4 float-end">Register</button>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    class RegisterInput
+    {
+        [Required(ErrorMessage = "Username is required")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Username is required"), MinLength(8, ErrorMessage = "Password must contain at least 8 characters")]
+        public string Password { get; set; }
+
+        public bool IsValid { get; set; } = true;
+        public bool Registered { get; set; } = false;
+    }
+
+    RegisterInput registerInput = new RegisterInput();
+
+    private async Task TryRegister(EditContext editContext)
+    {
+        var registerInput = (RegisterInput)editContext.Model;
+        var username = registerInput.Username;
+        var password = registerInput.Password;
+
+        var existingAccount = await userAccountService.GetByUsername(username);
+        if (existingAccount != null)
+        {
+            registerInput.IsValid = false;
+            return;
+        }
+
+        byte[] saltBytes = RandomNumberGenerator.GetBytes(128 / 8); // divide by 8 to convert bits to bytes
+
+        string hash = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+            password: password!,
+            salt: saltBytes,
+            prf: KeyDerivationPrf.HMACSHA256,
+            iterationCount: 100000,
+            numBytesRequested: 256 / 8));
+
+        var salt = Convert.ToBase64String(saltBytes);
+
+        var accountRole = await userAccountRoleService.GetByEnum(Data.Models.EAccountRole.Reader);
+        var account = new UserAccount() { Role = accountRole };
+        var accountLogin = new UserAccountLogin() { Username = username, PasswordHash = hash, PasswordSalt = salt, Account = account };
+        await userAccountService.RegisterUser(accountLogin);
+
+        registerInput.IsValid = true;
+        registerInput.Registered = true;
+    }
+
+    private void GoToLogin()
+    {
+        navManager.NavigateTo("/", true);
+    }
+}

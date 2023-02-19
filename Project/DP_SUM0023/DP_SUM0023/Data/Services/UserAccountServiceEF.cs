@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using DP_SUM0023.Data.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Security.Cryptography;
 
 namespace DP_SUM0023.Data.Services
 {
@@ -72,5 +73,24 @@ namespace DP_SUM0023.Data.Services
             return accountLogin.Username;
         }
 
+        public async Task<UserAccount> GetByUsername(string username)
+        {
+            UserAccountLogin? accountLogin = await dbContext.AccountLogin.SingleOrDefaultAsync(x => x.Username == username);
+            if (accountLogin == null)
+                return null;
+
+            return await Task.FromResult(accountLogin.Account);
+        }
+
+        public async Task RegisterUser(UserAccountLogin login)
+        {
+            var account = login.Account;
+            if (account == null)
+                throw new Exception();
+
+            await CreateAsync(account);
+            await dbContext.AccountLogin.AddAsync(login);
+            await dbContext.SaveChangesAsync();
+        }
     }
 }

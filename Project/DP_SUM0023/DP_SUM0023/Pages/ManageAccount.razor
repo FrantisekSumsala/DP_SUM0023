@@ -9,7 +9,7 @@
 @inject IProjectService projectService
 @inject NavigationManager navManager
 
-<h1>Account: @userAccountService.GetAccountUsername(Account)</h1>
+<h1>Account: @userAccountService.GetAccountUsername(Account).Result</h1>
 
 <div class="container-fluid">
     @*Display account information*@

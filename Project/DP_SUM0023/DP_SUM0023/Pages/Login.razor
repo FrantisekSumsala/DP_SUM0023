@@ -8,31 +8,39 @@
 
 <h3 class="text-center">Login</h3>
 <div class="row justify-content-center align-items-center">
-    <div class="col-md-4 border border-dark rounded">
+    <div class="col-md-4 border border-dark rounded" style="padding-bottom:20px">
         <EditForm Model=@loginInput OnSubmit="TryLogin" style="padding-top:10px">
-
-            <div class="form-outline mb-4">
-                <label class="form-label" for="UsernameInput">Username</label>
-                <InputText id="UsernameInput" class="form-control" @bind-Value="@loginInput.Username"></InputText>
-            </div>
-
-            <div class="form-outline mb-4">
-                <label class="form-label" for="PasswordInput">Password</label>
-                <InputText type="password" class="form-control" id="PasswordInput" @bind-Value="@loginInput.Password"></InputText>
-            </div>
-
-            <div class="row justify-content-between align-items-center">
-                <div class="col-sm">
-                    @if (!loginInput.IsValid)
-                    {
-                        <p style="color:red">Invalid Username or Password!</p>
-                    }
+            <div class="row">
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="UsernameInput">Username</label>
+                    <InputText id="UsernameInput" class="form-control" @bind-Value="@loginInput.Username"></InputText>
                 </div>
-                    <div class="col-sm-4">
-                    <button type="submit" class="btn btn-primary btn-block mb-4 float-end">Login</button>
+            </div>
+
+            <div class="row">
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="PasswordInput">Password</label>
+                    <InputText type="password" class="form-control" id="PasswordInput" @bind-Value="@loginInput.Password"></InputText>
+                </div>
+            </div>
+
+            <div class="row">
+                @if (!loginInput.IsValid)
+                {
+                    <p style="color:red">Invalid Username or Password!</p>
+                }
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Login</button>
                 </div>
             </div>
         </EditForm>
+
+        <div class="row" style="padding-top:10px">
+            <div class="d-grid">
+                <button class="btn btn-secondary" type="button" @onclick=GoToRegister>Register</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -72,5 +80,10 @@
         var customAuthenticationStateProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
         await customAuthenticationStateProvider.UpdateAuthenticationStateAsync(userSession);
         navManager.NavigateTo("/", true);
+    }
+
+    private void GoToRegister()
+    {
+        navManager.NavigateTo("/register", true);
     }
 }
