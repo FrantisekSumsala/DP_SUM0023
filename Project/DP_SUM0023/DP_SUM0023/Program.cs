@@ -29,7 +29,6 @@ builder.Services.AddDbContext<CustomDbContext>((DbContextOptionsBuilder options)
 //builder.Services.AddScoped(_ => new MySqlConnector.MySqlConnection(connectionString));
 
 // setup custom services
-builder.Services.AddSingleton<WeatherForecastService>(); //TODO: Get rid of this and the related classes
 builder.Services.AddScoped<IUserAccountService, UserAccountServiceEF>();
 builder.Services.AddScoped<IUserAccountRoleService, UserAccountRoleServiceEF>();
 builder.Services.AddScoped<ICompanyService, CompanyServiceEF>();
