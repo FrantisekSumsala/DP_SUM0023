@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DP_SUM0023.Data.Services.Interfaces;
 using DP_SUM0023.Data.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System.Security.Cryptography;
 
-namespace DP_SUM0023.Data.Services
+namespace DP_SUM0023.Data.Services.EntityFramework
 {
     public class UserAccountServiceEF : IUserAccountService
     {
@@ -26,18 +26,27 @@ namespace DP_SUM0023.Data.Services
 
         public async Task CreateAsync(UserAccount instanceToCreate)
         {
+            if (instanceToCreate == null)
+                return;
+
             await dbContext.Account.AddAsync(instanceToCreate);
             await dbContext.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(UserAccount instanceToUpdate)
         {
+            if (instanceToUpdate == null)
+                return;
+
             dbContext.Account.Update(instanceToUpdate);
             await dbContext.SaveChangesAsync();
         }
 
         public async Task RemoveAsync(UserAccount instanceToRemove)
         {
+            if (instanceToRemove == null)
+                return;
+
             dbContext.Account.Remove(instanceToRemove);
             await dbContext.SaveChangesAsync();
         }

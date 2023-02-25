@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using DP_SUM0023.Authentication;
 using DP_SUM0023.Data;
-using DP_SUM0023.Data.Services;
+using DP_SUM0023.Data.Services.Interfaces;
+using DP_SUM0023.Data.Services.EntityFramework;
 
 var builder = WebApplication.CreateBuilder(args);
 

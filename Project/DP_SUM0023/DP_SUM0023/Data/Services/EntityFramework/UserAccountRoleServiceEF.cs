@@ -1,7 +1,8 @@
-﻿using DP_SUM0023.Data.Models;
+﻿using DP_SUM0023.Data.Services.Interfaces;
+using DP_SUM0023.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DP_SUM0023.Data.Services
+namespace DP_SUM0023.Data.Services.EntityFramework
 {
     public class UserAccountRoleServiceEF : IUserAccountRoleService
     {
@@ -24,18 +25,27 @@ namespace DP_SUM0023.Data.Services
 
         public async Task CreateAsync(UserAccountRole instanceToCreate)
         {
+            if (instanceToCreate == null)
+                return;
+
             await dbContext.AccountRole.AddAsync(instanceToCreate);
             await dbContext.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(UserAccountRole instanceToUpdate)
         {
+            if (instanceToUpdate == null)
+                return;
+
             dbContext.AccountRole.Update(instanceToUpdate);
             await dbContext.SaveChangesAsync();
         }
 
         public async Task RemoveAsync(UserAccountRole instanceToRemove)
         {
+            if (instanceToRemove == null)
+                return;
+
             dbContext.AccountRole.Remove(instanceToRemove);
             await dbContext.SaveChangesAsync();
         }

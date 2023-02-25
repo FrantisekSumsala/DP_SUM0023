@@ -1,7 +1,8 @@
-﻿using DP_SUM0023.Data.Models;
+﻿using DP_SUM0023.Data.Services.Interfaces;
+using DP_SUM0023.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DP_SUM0023.Data.Services
+namespace DP_SUM0023.Data.Services.EntityFramework
 {
     public class ProcessReportServiceEF : IProcessReportService
     {
@@ -24,18 +25,27 @@ namespace DP_SUM0023.Data.Services
 
         public async Task CreateAsync(ProcessReport instanceToCreate)
         {
+            if (instanceToCreate == null)
+                return;
+
             await dbContext.ProcessReport.AddAsync(instanceToCreate);
             await dbContext.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(ProcessReport instanceToUpdate)
         {
+            if (instanceToUpdate == null)
+                return;
+
             dbContext.ProcessReport.Update(instanceToUpdate);
             await dbContext.SaveChangesAsync();
         }
 
         public async Task RemoveAsync(ProcessReport instanceToRemove)
         {
+            if (instanceToRemove == null)
+                return;
+
             dbContext.ProcessReport.Remove(instanceToRemove);
             await dbContext.SaveChangesAsync();
         }
