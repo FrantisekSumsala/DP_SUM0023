@@ -16,5 +16,6 @@ namespace DP_SUM0023.Data.Models
         public virtual Project Project { get; set; }
 
         public virtual List<ProcessEvaluation> Evaluations { get; set; } = new List<ProcessEvaluation>();
+        public virtual List<ProcessReport> Reports { get; set; } = new List<ProcessReport>();
     }
 }
