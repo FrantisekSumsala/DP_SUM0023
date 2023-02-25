@@ -138,7 +138,7 @@
             navManager.NavigateTo("/manageaccounts", true);
 
         GetAssignedProjects();
-        GetUnassignedProjects();
+        await GetUnassignedProjects();
     }
 
     // Display account info
@@ -151,7 +151,7 @@
 
     AccountInformation accountInformation = new AccountInformation();
 
-    private async Task EnableAccountInformationEditMode()
+    private void EnableAccountInformationEditMode()
     {
         isInAccountEditMode = true;
         accountInformation.Role = userAccountRoleService.ToEnumRole(Account.Role);
@@ -166,14 +166,14 @@
         isInAccountEditMode = false;
     }
 
-    private async Task CancelChangeAccountInformation()
+    private void CancelChangeAccountInformation()
     {
         isInAccountEditMode = false;
     }
 
     // Display assigned projects
     private List<Project> assignedProjects = new List<Project>();
-    private async Task GetAssignedProjects()
+    private void GetAssignedProjects()
     {
         assignedProjects = Account.AssignedProjects;
     }
@@ -185,10 +185,10 @@
             return;
 
         accountProjects.Remove(project);
-        userAccountService.UpdateAsync(Account);
+        await userAccountService.UpdateAsync(Account);
 
         GetAssignedProjects();
-        GetUnassignedProjects();
+        await GetUnassignedProjects();
     }
 
     // Display unassigned projects
@@ -205,9 +205,9 @@
             return;
 
         accountProjects.Add(project);
-        userAccountService.UpdateAsync(Account);
+        await userAccountService.UpdateAsync(Account);
 
         GetAssignedProjects();
-        GetUnassignedProjects();
+        await GetUnassignedProjects();
     }
 }
