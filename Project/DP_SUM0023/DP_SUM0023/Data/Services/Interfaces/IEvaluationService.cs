@@ -2,7 +2,7 @@
 
 namespace DP_SUM0023.Data.Services.Interfaces
 {
-    public interface IProcessReportService : IDefaultCRUDService<ProcessReport>
+    public interface IEvaluationService : IDefaultCRUDService<Evaluation>
     {
     }
 }

@@ -4,40 +4,104 @@
 @using DP_SUM0023.Data.Models
 @using DP_SUM0023.Data.Services.Interfaces
 @inject IProjectService projectService
+@inject IUserAccountService userAccountService
 @inject NavigationManager navManager
 
 <h1>Project: @Project.Company.Name - @Project.Name</h1>
 
 <div class="container-fluid">
-    @*Display project processes*@
+    @*Display reports*@
     <div class="container-fluid">
-        <h3 style="padding-top:10px">Project processes:</h3>
+        <h3 style="padding-top:10px">Reports:</h3>
 
-        @if (projectProcesses == null)
-        {
-            <p><em>Loading...</em></p>
-        }
-        else
-        {
-            <table class="table table-striped w-auto">
-                <thead>
+        <table class="table table-striped w-auto">
+            <thead>
+                <tr>
+                    <th class="text-nowrap" scope="col">Report</th>
+                    <th class="text-nowrap" scope="col">Date created</th>
+                    <th class="text-nowrap" scope="col" style="width:100%">Creator</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var report in Project.Reports)
+                {
+                    string creatorName = "Unknown";
+                    var creatorAccount = report.Creator;
+                    if (creatorAccount is not null)
+                        creatorName = userAccountService.GetAccountUsername(creatorAccount).Result;
+
                     <tr>
-                        <th scope="col" style="width:100%">Process name</th>
-                        <th></th>
+                        <td scope="row" class="align-middle">@report.Id</td>
+                        <td scope="row" class="align-middle">@report.DateCreated.ToShortDateString()</td>
+                        <td scope="row" class="align-middle">@creatorName</td>
+                        <td><button type="button" class="btn btn-primary text-nowrap" @onclick="@(async () => ViewReport(report))">View</button></td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var process in projectProcesses)
-                    {
-                        <tr>
-                            <td scope="row" class="align-middle">@process.Name</td>
-                            <td><button type="button" class="btn btn-primary text-nowrap" @onclick="@(async () => ViewProcess(process))">View Process</button></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
+                }
+            </tbody>
+        </table>
     </div>
+
+    <AuthorizeView Roles="Editor">
+        <Authorized>
+            @*Display evaluations*@
+            <div class="container-fluid">
+                <h3 style="padding-top:10px">Evaluations:</h3>
+
+                <table class="table table-striped w-auto">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap" scope="col">Evaluation</th>
+                            <th class="text-nowrap" scope="col">Date Performed</th>
+                            <th class="text-nowrap" scope="col" style="width:100%">Evaluator</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var evaluation in Project.Evaluations)
+                        {
+                            string evaluatorName = "Unknown";
+                            var evaluatorAccount = evaluation.EvaluatorAccount;
+                            if (evaluatorAccount is not null)
+                                evaluatorName = userAccountService.GetAccountUsername(evaluatorAccount).Result;
+
+                            <tr>
+                                <td scope="row" class="align-middle">@evaluation.Id</td>
+                                <td scope="row" class="align-middle">@evaluation.DatePerformed.ToShortDateString()</td>
+                                <td scope="row" class="align-middle">@evaluatorName</td>
+                                <td><button type="button" class="btn btn-danger text-nowrap" @onclick="@(async () => DeleteEvaluation(evaluation))">Delete</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+
+            @*Upload new evaluation*@
+            <div class="container-fluid">
+                <h4 style="padding-top:10px">Upload new evaluation</h4>
+
+                <div class="row justify-content-start align-items-center" style="padding-left:15px">
+                    <div class="col-md-3 border border-dark rounded">
+@*                        <EditForm Model=@newProject OnValidSubmit="CreateNewProject">
+                            <DataAnnotationsValidator />
+
+                            <div class="form-outline mb-4">
+                                <label class="form-label" for="ProjectNameInput">Project name</label>
+                                <InputText id="ProjectNameInput" class="form-control" @bind-Value="@newProject.Name"></InputText>
+                                <ValidationMessage For="() => newProject.Name" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block mb-3 float-end">Create</button>
+                        </EditForm>*@
+
+                        <InputFile class="form-control" accept=".xls,.xlsx" OnChange="@LoadFile" />
+
+                    </div>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
 </div>
 
 @code {
@@ -53,20 +117,33 @@
             navManager.NavigateTo("/viewProjects", true);
             return;
         }
-
-        GetProjectProcesses();
     }
 
-    // Display project processes
-    private List<Process> projectProcesses = new List<Process>();
-    private async Task GetProjectProcesses()
+    private void DeleteEvaluation(Evaluation evaluationToDelete)
     {
-        projectProcesses = Project.Processes;
+        //TODO
     }
 
-    public void ViewProcess(Process processToView)
+    private void ViewReport(Report reportToView)
     {
-        var processId = processToView.Id;
-        navManager.NavigateTo("/viewProcess/" + processId.ToString(), true);
+        //TODO
+    }
+
+    private const long maxFileSizeBytes = 10 * 1000 * 1000;
+    private void LoadFile(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null)
+        {
+            //TODO
+            return;
+        }
+
+        using (var stream = file.OpenReadStream(maxFileSizeBytes))
+        {
+            
+        }
+        
+
     }
 }

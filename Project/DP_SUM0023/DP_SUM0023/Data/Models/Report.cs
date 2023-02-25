@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DP_SUM0023.Data.Models
 {
-    [Table("processevaluation")]
-    public class ProcessEvaluation
+    [Table("report")]
+    public class Report
     {
         [Key, Required]
         public int Id { get; set; }
 
         [Required]
-        public DateTime DatePerformed { get; set; }
+        public DateTime DateCreated { get; set; }
 
         [Required]
-        public virtual Process Process { get; set; }
+        public virtual Project Project { get; set; }
 
         [Required]
-        public virtual UserAccount EvaluatorAccount { get; set; }
+        public virtual UserAccount Creator { get; set; }
     }
 }

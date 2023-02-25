@@ -34,8 +34,8 @@ builder.Services.AddScoped<IUserAccountService, UserAccountServiceEF>();
 builder.Services.AddScoped<IUserAccountRoleService, UserAccountRoleServiceEF>();
 builder.Services.AddScoped<ICompanyService, CompanyServiceEF>();
 builder.Services.AddScoped<IProjectService, ProjectServiceEF>();
-builder.Services.AddScoped<IProcessService, ProcessServiceEF>();
-builder.Services.AddScoped<IProcessEvaluationService, ProcessEvauluationServiceEF>();
+builder.Services.AddScoped<IEvaluationService, EvauluationServiceEF>();
+builder.Services.AddScoped<IReportService, ReportServiceEF>();
 
 var app = builder.Build();
 

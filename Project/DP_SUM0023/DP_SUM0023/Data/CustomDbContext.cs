@@ -10,9 +10,8 @@ namespace DP_SUM0023.Data
         public DbSet<UserAccountRole> AccountRole { get; set; }
         public DbSet<Company> Company { get; set; }
         public DbSet<Project> Project { get; set; }
-        public DbSet<Process> Process { get; set; }
-        public DbSet<ProcessEvaluation> ProcessEvaluation { get; set; }
-        public DbSet<ProcessReport> ProcessReport { get; set; }
+        public DbSet<Evaluation> Evaluation { get; set; }
+        public DbSet<Report> Report { get; set; }
 
         public CustomDbContext(DbContextOptions<CustomDbContext> options) : base(options) { }
 

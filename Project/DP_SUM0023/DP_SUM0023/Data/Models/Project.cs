@@ -17,7 +17,9 @@ namespace DP_SUM0023.Data.Models
 
         public virtual List<UserAccount> AssignedTo { get; set; } = new List<UserAccount>();
 
-        public virtual List<Process> Processes { get; set; } = new List<Process>();
+        public virtual List<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
+
+        public virtual List<Report> Reports { get; set; } = new List<Report>();
 
         public override bool Equals(object? obj)
         {

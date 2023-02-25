@@ -4,50 +4,50 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DP_SUM0023.Data.Services.EntityFramework
 {
-    public class ProcessServiceEF : IProcessService
+    public class ReportServiceEF : IReportService
     {
         private readonly CustomDbContext dbContext;
-        public ProcessServiceEF(CustomDbContext dbContext)
+
+        public ReportServiceEF(CustomDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
 
-        public async Task<List<Process>> GetAllAsync()
+        public async Task<List<Report>> GetAllAsync()
         {
-            return await dbContext.Process.ToListAsync();
+            return await dbContext.Report.ToListAsync();
         }
 
-        public async Task<Process> GetByIdAsync(int id)
+        public async Task<Report> GetByIdAsync(int id)
         {
-            return await dbContext.Process.SingleOrDefaultAsync(x => x.Id == id);
+            return await dbContext.Report.SingleOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task CreateAsync(Process instanceToCreate)
+        public async Task CreateAsync(Report instanceToCreate)
         {
             if (instanceToCreate == null)
                 return;
 
-            await dbContext.Process.AddAsync(instanceToCreate);
+            await dbContext.Report.AddAsync(instanceToCreate);
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Process instanceToUpdate)
+        public async Task UpdateAsync(Report instanceToUpdate)
         {
             if (instanceToUpdate == null)
                 return;
 
-            dbContext.Process.Update(instanceToUpdate);
+            dbContext.Report.Update(instanceToUpdate);
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task RemoveAsync(Process instanceToRemove)
+        public async Task RemoveAsync(Report instanceToRemove)
         {
             if (instanceToRemove == null)
                 return;
 
-            dbContext.Process.Remove(instanceToRemove);
+            dbContext.Report.Remove(instanceToRemove);
             await dbContext.SaveChangesAsync();
         }
-
     }
 }
