@@ -52,5 +52,15 @@ namespace DP_SUM0023.Authentication
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
+
+        public async Task<string> GetAccountUsername()
+        {
+            var userSessionStorage = await sessionStorage.GetAsync<UserSession>("UserSession");
+            var userSession = userSessionStorage.Success ? userSessionStorage.Value : null;
+            if (userSession == null)
+                return null;
+
+            return userSession.Username;
+        }
     }
 }

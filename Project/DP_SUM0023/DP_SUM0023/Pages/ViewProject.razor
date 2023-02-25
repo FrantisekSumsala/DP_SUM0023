@@ -1,0 +1,72 @@
+﻿@page "/viewProject/{projectId:int}"
+@attribute [Authorize(Roles = "Editor, Reader")]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@inject IProjectService projectService
+@inject NavigationManager navManager
+
+<h1>Project: @Project.Company.Name - @Project.Name</h1>
+
+<div class="container-fluid">
+    @*Display project processes*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Project processes:</h3>
+
+        @if (projectProcesses == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width:100%">Process name</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var process in projectProcesses)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@process.Name</td>
+                            <td><button type="button" class="btn btn-primary text-nowrap" @onclick="@(async () => ViewProcess(process))">View Process</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ProjectId { get; set; }
+    public Project? Project { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Project = await projectService.GetByIdAsync(ProjectId);
+        if (Project == null)
+        {
+            navManager.NavigateTo("/viewProjects", true);
+            return;
+        }
+
+        GetProjectProcesses();
+    }
+
+    // Display project processes
+    private List<Process> projectProcesses = new List<Process>();
+    private async Task GetProjectProcesses()
+    {
+        projectProcesses = Project.Processes;
+    }
+
+    public void ViewProcess(Process processToView)
+    {
+        var processId = processToView.Id;
+        navManager.NavigateTo("/viewProcess/" + processId.ToString(), true);
+    }
+}

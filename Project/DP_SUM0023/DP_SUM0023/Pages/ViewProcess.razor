@@ -1,0 +1,144 @@
+﻿@page "/viewProcess/{processId:int}"
+@attribute [Authorize(Roles = "Editor, Reader")]
+
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@inject IProcessService processService;
+@inject IProcessEvaluationService processEvaluationService;
+@inject IUserAccountService userAccountService
+@inject NavigationManager navManager
+
+<h1>Process: @Process.Project.Company.Name - @Process.Project.Name - @Process.Name</h1>
+
+<div class="container-fluid">
+    <AuthorizeView Roles="Editor">
+        <Authorized>
+            @*Display process evaluations*@
+            <div class="container-fluid">
+                <h3 style="padding-top:10px">Process evaluations:</h3>
+
+                @if (processEvaluations == null)
+                {
+                    <p><em>Loading...</em></p>
+                }
+                else
+                {
+                    <table class="table table-striped w-auto">
+                        <thead>
+                            <tr>
+                                <th class="text-nowrap" scope="col">Evaluation</th>
+                                <th class="text-nowrap" scope="col">Date Performed</th>
+                                <th class="text-nowrap" scope="col" style="width:100%">Evaluator</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var evaluation in processEvaluations)
+                            {
+                                string evaluatorName = "Unknown";
+                                var evaluatorAccount = evaluation.EvaluatorAccount;
+                                if (evaluatorAccount is not null)
+                                    evaluatorName = userAccountService.GetAccountUsername(evaluatorAccount).Result;
+
+                                <tr>
+                                    <td scope="row" class="align-middle">@evaluation.Id</td>
+                                    <td scope="row" class="align-middle">@evaluation.DatePerformed.ToShortDateString()</td>
+                                    <td scope="row" class="align-middle">@evaluatorName</td>
+                                    <td><button type="button" class="btn btn-danger text-nowrap" @onclick="@(async () => await DeleteEvaluation(evaluation))">Delete</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
+    @*Display process reports*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Process reports:</h3>
+
+        @if (processReports == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th class="text-nowrap" scope="col">Report</th>
+                        <th class="text-nowrap" scope="col">Date created</th>
+                        <th class="text-nowrap" scope="col" style="width:100%">Creator</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in processReports)
+                    {
+                        string creatorName = "Unknown";
+                        var creatorAccount = report.Creator;
+                        if (creatorAccount is not null)
+                            creatorName = userAccountService.GetAccountUsername(creatorAccount).Result;
+
+                        <tr>
+                            <td scope="row" class="align-middle">@report.Id</td>
+                            <td scope="row" class="align-middle">@report.DateCreated.ToShortDateString()</td>
+                            <td scope="row" class="align-middle">@creatorName</td>
+                            <td><button type="button" class="btn btn-primary text-nowrap" @onclick="@(async () => ViewReport(report))">View</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ProcessId { get; set; }
+    public Process? Process { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Process = await processService.GetByIdAsync(ProcessId);
+        if (Process == null)
+        {
+            navManager.NavigateTo("/viewProjects", true);
+            return;
+        }
+
+        GetProcessEvaluations();
+        GetProcessReports();
+    }
+
+    // Display process evaluations
+    private List<ProcessEvaluation> processEvaluations = new List<ProcessEvaluation>();
+    private async Task GetProcessEvaluations()
+    {
+        processEvaluations = Process.Evaluations;
+    }
+
+    // Display process reports
+    private List<ProcessReport> processReports = new List<ProcessReport>();
+    private async Task GetProcessReports()
+    {
+        processReports = Process.Reports;
+    }
+
+    // Delete process evaluation
+    private async Task DeleteEvaluation(ProcessEvaluation evaluationToDelete)
+    {
+        if (evaluationToDelete is null)
+            return;
+
+        processEvaluationService.RemoveAsync(evaluationToDelete);
+        GetProcessEvaluations();
+    }
+
+    public void ViewReport(ProcessReport reportToView)
+    {
+        var reportId = reportToView.Id;
+        navManager.NavigateTo("/viewReport/" + reportId.ToString(), true);
+    }
+}

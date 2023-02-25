@@ -1,0 +1,81 @@
+﻿@page "/viewProjects"
+@attribute [Authorize(Roles = "Editor, Reader")]
+
+@using DP_SUM0023.Authentication
+@using DP_SUM0023.Data.Models
+@using DP_SUM0023.Data.Services
+@inject IUserAccountService userAccountService
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navManager
+
+<div class="container-fluid">
+    @*Display projects account is assigned to*@
+    <div class="container-fluid">
+        <h3 style="padding-top:10px">Assigned projects:</h3>
+
+        @if (assignedProjects == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-striped w-auto">
+                <thead>
+                    <tr>
+                        <th class="text-nowrap" scope ="col">Project name</th>
+                        <th style="width:100%">Company name</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var project in assignedProjects)
+                    {
+                        <tr>
+                            <td scope="row" class="align-middle">@project.Name</td>
+                            <td scope="row" class="align-middle">@project.Company.Name</td>
+                            <td><button type="button" class="btn btn-primary text-nowrap" @onclick="@(async () => ViewProject(project))">View Project</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    public UserAccount? Account { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Account = await GetLoggedUser();
+        if (Account is null)
+        {
+            navManager.NavigateTo("/", true);
+            return;
+        }
+
+        GetAssignedProjects();
+    }
+
+    // Display assigned projects
+    private List<Project> assignedProjects = new List<Project>();
+    private async Task GetAssignedProjects()
+    {
+        assignedProjects = Account.AssignedProjects;
+    }
+
+    public async Task<UserAccount> GetLoggedUser()
+    {
+        var username = await ((CustomAuthenticationStateProvider)authenticationStateProvider).GetAccountUsername();
+        if (string.IsNullOrEmpty(username))
+            return null;
+
+        return await userAccountService.GetByUsername(username);
+    }
+
+    public void ViewProject(Project projectToView)
+    {
+        var projectId = projectToView.Id;
+        navManager.NavigateTo("/viewProject/" + projectId.ToString(), true);
+    }
+}
